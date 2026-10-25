@@ -34,6 +34,20 @@ After deployment verify `/health`, anonymous case denial, password sign-in, sele
 
 ## Deployment status
 
-Deployment prepared; live Render verification pending.
+Deployed and verified on **October 25, 2026 (America/Los_Angeles)**:
+
+- App: [resolution-intelligence.onrender.com](https://resolution-intelligence.onrender.com).
+- Render service: `resolution-intelligence`, Docker, Virginia, **Free**. Runtime commit: `1fc592afc26ff5f5e45ec94d13e4266aa92e0d6d`.
+- `/health` returned `status=ok`, `storage=postgres`, `hosted=true`. Anonymous case access was denied; sign-in issued a Secure/HttpOnly/Strict session cookie.
+- Keenable returned four public guidance sources during the hosted CASE-1007 investigation. Search secrets stayed on the server.
+- Restarted the Render service while the $749 proposal awaited telecom approval. The same session and proposal revision survived. Approval resumed the stored LangGraph checkpoint, created a bank review task, and required the bank perspective to post the simulated credit.
+- Repeated bank approval was rejected. The customer saw exactly one new $749 refund and two portal notifications; access to another customer's case and agent run details was denied.
+- Local suite: **50 tests passed**. A separate live Supabase test also verified checkpoint recovery across processes and denied schema access to the `anon` and `authenticated` roles.
+
+The completed Riley Quinn case remains available as a walkthrough. Morgan Lee and Jamie Patel remain unprocessed for fresh automatic-match and partial-payment demonstrations. The original RAG app and JalaSetu service were not changed.
+
+The service was created from the public repository URL. For code updates, use Render's **Manual Deploy → Deploy latest commit** unless a Git-provider integration is later connected and automatic deployment is explicitly configured. The repository includes `render.yaml` for reproducibility; this manual deployment is not managed by a Blueprint.
+
+Keep the workspace password in private settings and share it separately with intended reviewers. Keenable is configured; model-driven mode, Stripe, Plaid and Twilio are not configured. Customer messages in this deployment are portal updates, and all bank postings are simulated.
 
 References: [Render Free](https://render.com/docs/free), [Render Docker](https://render.com/docs/docker), [Supabase connection modes](https://supabase.com/docs/guides/database/connecting-to-postgres).

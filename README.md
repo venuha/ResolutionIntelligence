@@ -18,6 +18,8 @@ The identity selector represents fictional perspectives. Hosted mode requires a 
 
 ## Render Free + Supabase
 
+**Live private demo:** [resolution-intelligence.onrender.com](https://resolution-intelligence.onrender.com). Enter the separately shared workspace password. The hosted Riley Quinn / CASE-1007 example already contains a completed $749 simulated refund and both customer notifications; use Morgan Lee or Jamie Patel for a fresh investigation.
+
 `render.yaml` and `Dockerfile` configure a single **Free** web service. Supabase stores run summaries, approvals, sessions, simulated bank records, notifications and LangGraph checkpoints in `resolution_private`, separate from the Week 2 app. Hosted startup refuses to use ephemeral SQLite. See [deployment instructions](docs/deployment.md) for private settings, access and verification.
 
 ## Try the complete journey
