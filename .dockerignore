@@ -1,0 +1,12 @@
+**
+!Dockerfile
+!requirements.lock
+!resolution/
+!resolution/**
+!data/
+!data/**
+!scripts/
+!scripts/**
+**/__pycache__/
+**/*.pyc
+**/.env*

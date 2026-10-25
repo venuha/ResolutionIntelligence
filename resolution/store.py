@@ -2,10 +2,9 @@
 import hashlib
 import json
 import os
-import sqlite3
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from . import database
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -20,6 +19,8 @@ def fingerprint(value):
 
 class Store:
     def __init__(self, directory=None):
+        self.database_url = os.getenv("DATABASE_URL", "") if directory is None else ""
+        database.initialize(self.database_url)
         self.directory = Path(directory or os.getenv("REFUND_WORK_DIR", ROOT / "work"))
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.path = self.directory / "operations.sqlite"
@@ -49,18 +50,14 @@ class Store:
             CREATE TABLE IF NOT EXISTS bank_ledger (
               id TEXT PRIMARY KEY, case_id TEXT NOT NULL, kind TEXT NOT NULL,
               amount INTEGER NOT NULL, data TEXT NOT NULL, created TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS login_attempts (
+              id TEXT PRIMARY KEY, attempts INTEGER NOT NULL, expires REAL NOT NULL);
             """)
-        self.path.chmod(0o600)
+        if not self.database_url:
+            self.path.chmod(0o600)
 
-    @contextmanager
     def connect(self):
-        c = sqlite3.connect(self.path, timeout=15)
-        c.row_factory = sqlite3.Row
-        try:
-            with c:
-                yield c
-        finally:
-            c.close()
+        return database.connect(self.path, self.database_url)
 
     def create_run(self, run_id, case_id, owner, state):
         with self.connect() as c:
@@ -120,4 +117,4 @@ class Store:
     def charge(self, case_id):
         with self.connect() as c:
             r = c.execute("SELECT charge_id FROM links WHERE case_id=?", (case_id,)).fetchone()
-        return r[0] if r else None
+        return r["charge_id"] if r else None

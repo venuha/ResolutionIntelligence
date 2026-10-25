@@ -2,7 +2,7 @@
 
 A separate Week 3 application built from the Week 2 synthetic RAG corpus and deterministic reconciliation module. A LangGraph orchestrator coordinates six investigation specialists, then a deterministic receiving-bank agent matches approved refunds to original card purchases. Telecom and bank reviewers have separate responsibilities; customer updates reflect confirmed workflow stages.
 
-**The original Week 2 RAG project is unchanged.** This project has its own source, environment, SQLite databases, configuration and interface.
+**The original Week 2 RAG project is unchanged.** This project has its own source, environment, configuration and interface. Local development uses SQLite; hosted persistence uses its own private Supabase schema.
 
 ## Run locally
 
@@ -14,7 +14,11 @@ python3.12 -m venv .venv
 
 Open **http://127.0.0.1:8103**. Choose a fictional demo identity. No provider key or personal information is required for the rule-based demonstration. Bind to localhost and run a single worker.
 
-The identity selector is intentionally a local demo mechanism, not production authentication. The backend enforces each selected identity's role and case assignments. This application is not designed for public hosting with the demo identity selector enabled.
+The identity selector represents fictional perspectives. Hosted mode requires a private workspace password before any case access or perspective switching. Anyone given that password can demonstrate all perspectives; these are not separate employee accounts. The backend enforces the selected perspective's case and action permissions. Use synthetic data only.
+
+## Render Free + Supabase
+
+`render.yaml` and `Dockerfile` configure a single **Free** web service. Supabase stores run summaries, approvals, sessions, simulated bank records, notifications and LangGraph checkpoints in `resolution_private`, separate from the Week 2 app. Hosted startup refuses to use ephemeral SQLite. See [deployment instructions](docs/deployment.md) for private settings, access and verification.
 
 ## Try the complete journey
 
@@ -81,9 +85,10 @@ If a provider submission times out after a possible write, its result is marked 
 
 - `work/checkpoints.sqlite`: durable LangGraph checkpoints and approval interrupts.
 - `work/operations.sqlite`: cases' run summaries, approval audit state, idempotent actions, bank tasks, bank ledger, customer messages and hashed local demo sessions.
+- Hosted mode stores both operational data and checkpoints in the private Supabase schema instead of those local files.
 - Approval includes the exact proposal hash and evidence/financial snapshot. Changes invalidate execution.
 - Repeated approval requests or action replay cannot duplicate a recorded refund or bank credit.
-- The demo uses one application process and a serialized execution lock. SQLite transactions protect bank posting. Multi-worker coordination is future work.
+- The demo uses one application process and a serialized execution lock. SQLite transactions or a Postgres transaction advisory lock protect bank posting. Multi-worker orchestration is future work.
 - Source corpus records remain immutable in normal operation. A bank-posted event supplements them and does not rewrite the Week 2 snapshot.
 
 ## Week 2 feedback
@@ -112,6 +117,8 @@ Tests exercise role/case boundaries, a full telecom-to-bank-to-customer journey,
 | `resolution/legacy_reconciliation.py` | Copied Week 2 deterministic calculation module |
 | `resolution/evidence.py` | Case-filtered BM25 retrieval and versioned fictional procedure |
 | `resolution/main.py` | Local API, sessions, role checks and serving |
+| `resolution/database.py` | Private Supabase operations and Postgres checkpoint pool |
+| `resolution/hosting.py` | Hosted configuration validation, password check and sign-in limits |
 | `resolution/static/` | Telecom, bank, customer, connection and agent-team screens |
 | `data/` | Copied synthetic sources, fresh cases and historical Week 2 evaluation |
 
@@ -119,4 +126,4 @@ The previous dense/Pinecone retrieval, PDF uploads and production account system
 
 Keenable's search adapter was verified against its live API on October 25, 2026 (UTC), returning four official-provider sources. The key remains private and is not included in this repository. This verifies web retrieval only; model quality, Stripe and Plaid sandbox connections still require separate verification.
 
-Remaining submission work: enable and evaluate model mode with your own key, finish sandbox transaction linking, record the live demo (five minutes or less), and prepare the Google Doc. No cloud deployment, submission, or external customer notification has been performed.
+Remaining submission work: enable and evaluate model mode with your own key, finish sandbox transaction linking, record the live demo (five minutes or less), and prepare the Google Doc. Hosting status is recorded in `docs/deployment.md`; no course submission or external customer notification has been performed.

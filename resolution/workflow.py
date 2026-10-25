@@ -16,6 +16,8 @@ from .evidence import POLICY
 from .integrations import ProviderError, StripeSandbox, research_policy
 from .legacy_reconciliation import investigate
 from .store import fingerprint, now
+from .database import postgres_checkpointer
+import os
 
 
 class State(TypedDict, total=False):
@@ -54,10 +56,14 @@ class Engine:
         self.store, self.corpus = store, corpus
         self.bank = Bank(store, corpus)
         self.lock = threading.RLock()
-        self.checkpoint_connection = sqlite3.connect(store.directory / "checkpoints.sqlite", check_same_thread=False)
-        self.checkpointer = SqliteSaver(self.checkpoint_connection)
+        if store.database_url:
+            self.checkpoint_connection, self.checkpointer = postgres_checkpointer(os.environ["CHECKPOINT_DATABASE_URL"])
+        else:
+            self.checkpoint_connection = sqlite3.connect(store.directory / "checkpoints.sqlite", check_same_thread=False)
+            self.checkpointer = SqliteSaver(self.checkpoint_connection)
         self.graph = self.build()
-        (store.directory / "checkpoints.sqlite").chmod(0o600)
+        if not store.database_url:
+            (store.directory / "checkpoints.sqlite").chmod(0o600)
 
     def close(self):
         self.checkpoint_connection.close()

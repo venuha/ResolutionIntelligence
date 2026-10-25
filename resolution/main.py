@@ -6,6 +6,7 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
@@ -19,6 +20,7 @@ from .evidence import Corpus, POLICY
 from .integrations import ProviderError, StripeSandbox, configuration, plaid_candidates, send_test_sms
 from .store import ROOT, Store, fingerprint
 from .workflow import Engine
+from .hosting import hosted, validate_settings, check_password
 
 load_dotenv(ROOT / ".env")
 # Telemetry is opt-in; do not export synthetic case traces by default.
@@ -36,6 +38,7 @@ IDENTITIES = {
 
 class Login(BaseModel):
     identity: str
+    password: str = Field(default="", max_length=512)
 
 
 class StartRun(BaseModel):
@@ -52,6 +55,8 @@ class Decision(BaseModel):
 
 
 def create_app(directory=None, testing=False):
+    validate_settings(testing)
+    is_hosted = hosted()
     store, corpus = Store(directory), Corpus()
     engine = Engine(store, corpus)
 
@@ -63,19 +68,25 @@ def create_app(directory=None, testing=False):
     app = FastAPI(title="Refund Resolution Command Center", lifespan=lifespan)
     app.state.engine, app.state.store, app.state.corpus = engine, store, corpus
     hosts = ["localhost", "127.0.0.1", "[::1]"] + (["testserver"] if testing else [])
+    public_host = os.getenv("RENDER_EXTERNAL_HOSTNAME") or urlsplit(os.getenv("REFUND_PUBLIC_URL", "")).hostname
+    if public_host:
+        hosts.append(public_host)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
 
     @app.middleware("http")
     async def local_boundary(request, call_next):
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             origin = request.headers.get("origin")
-            if origin and origin != str(request.base_url).rstrip("/"):
+            expected_origin = (os.getenv("REFUND_PUBLIC_URL") or ("https://" + public_host if public_host else "")) if is_hosted else str(request.base_url).rstrip("/")
+            if origin and origin.rstrip("/") != expected_origin.rstrip("/"):
                 return JSONResponse({"detail": "Cross-origin writes are not allowed"}, status_code=403)
             if request.headers.get("sec-fetch-site") == "cross-site":
                 return JSONResponse({"detail": "Cross-site writes are not allowed"}, status_code=403)
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        if is_hosted:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000"
         response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'self'"
         return response
 
@@ -97,7 +108,7 @@ def create_app(directory=None, testing=False):
             row = c.execute("SELECT identity FROM sessions WHERE token_hash=? AND expires>?",
                             (hashlib.sha256(token.encode()).hexdigest(), time.time())).fetchone()
         if not row:
-            raise HTTPException(401, "Choose a local demo identity to continue")
+            raise HTTPException(401, "Sign in to the demo workspace to continue")
         identity = row["identity"]
         p = {"id": identity, **IDENTITIES[identity]}
         p["cases"] = list(corpus.cases) if p["cases"] == "all" else p["cases"]
@@ -114,11 +125,20 @@ def create_app(directory=None, testing=False):
 
     @app.get("/api/bootstrap")
     def bootstrap():
-        return {"identities": [{"id": k, **v} for k, v in IDENTITIES.items()], "local_demo": True}
+        return {"identities": [{"id": k, **v} for k, v in IDENTITIES.items()], "local_demo": not is_hosted,
+                "password_required": is_hosted}
+
+    @app.get("/health")
+    def health():
+        with store.connect() as c:
+            c.execute("SELECT 1")
+        return {"status": "ok", "storage": "postgres" if store.database_url else "sqlite", "hosted": is_hosted}
 
     @app.post("/api/login")
     def login(body: Login, response: Response, request: Request):
-        if not testing and request.client.host not in ("127.0.0.1", "::1"):
+        if is_hosted:
+            check_password(store, request, body.password)
+        elif not testing and request.client.host not in ("127.0.0.1", "::1"):
             raise HTTPException(403, "This fictional demo is local-only")
         if body.identity not in IDENTITIES:
             raise HTTPException(400, "Unknown identity")
@@ -126,14 +146,25 @@ def create_app(directory=None, testing=False):
         with store.connect() as c:
             c.execute("DELETE FROM sessions WHERE expires<?", (time.time(),))
             c.execute("INSERT INTO sessions VALUES (?,?,?)", (hashlib.sha256(token.encode()).hexdigest(), body.identity, time.time()+28800))
-        response.set_cookie("rr_session", token, httponly=True, samesite="strict", max_age=28800)
+        response.set_cookie("rr_session", token, httponly=True, samesite="strict", max_age=28800, secure=is_hosted)
+        return {"ok": True}
+
+    @app.post("/api/perspective")
+    def perspective(body: Login, request: Request, p=Depends(principal)):
+        # An authenticated demo operator may explore each fictional perspective.
+        # This is a private portfolio demonstration, not employee role provisioning.
+        if body.identity not in IDENTITIES:
+            raise HTTPException(400, "Unknown identity")
+        with store.connect() as c:
+            c.execute("UPDATE sessions SET identity=? WHERE token_hash=?",
+                      (body.identity, hashlib.sha256(request.cookies["rr_session"].encode()).hexdigest()))
         return {"ok": True}
 
     @app.post("/api/logout")
     def logout(request: Request, response: Response):
         with store.connect() as c:
             c.execute("DELETE FROM sessions WHERE token_hash=?", (hashlib.sha256(request.cookies.get("rr_session", "").encode()).hexdigest(),))
-        response.delete_cookie("rr_session")
+        response.delete_cookie("rr_session", secure=is_hosted, httponly=True, samesite="strict")
         return {"ok": True}
 
     @app.get("/api/me")
