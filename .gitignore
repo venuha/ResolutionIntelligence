@@ -1,0 +1,16 @@
+.venv/
+.env*
+!.env.example
+work/
+__pycache__/
+.pytest_cache/
+*.pyc
+.DS_Store
+node_modules/
+.pnpm-store/
+/ELNINO/
+/outputs/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+

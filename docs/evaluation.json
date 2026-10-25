@@ -1,0 +1,353 @@
+{
+  "created_utc": "2026-10-25T04:12:25.592334+00:00",
+  "environment": "rule_based_demo",
+  "fresh_case_count": 4,
+  "calculation_accuracy": 1.0,
+  "action_justification": 1.0,
+  "workflow_completion": 1.0,
+  "model_explanation_faithfulness": null,
+  "model_evaluation_status": "not_run_requires_provider_key",
+  "external_api_verification": "not_run_requires_provider_credentials",
+  "historical_week2": {
+    "rows": 128,
+    "rows_below_0_5": 20,
+    "all_low_rows_for_review": [
+      {
+        "configuration": "fixed",
+        "case_id": "CASE-1001",
+        "question": "Was the returned package delivered?",
+        "faithfulness": 0.3333333333333333,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether the delivered package contained the specific returned device DEV-88001 is unknown.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Consult the warehouse intake records or device inspection reports to confirm the returned device was received and identified in the delivered package."
+        }
+      },
+      {
+        "configuration": "fixed",
+        "case_id": "CASE-1002",
+        "question": "What amount was approved?",
+        "faithfulness": 0.3333333333333333,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify if the approved refund amount of USD 899.00 has been submitted for payment and posted to the customer's account."
+        }
+      },
+      {
+        "configuration": "fixed",
+        "case_id": "CASE-1004",
+        "question": "What is the refund processor reference?",
+        "faithfulness": 0.3333333333333333,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether the refund processor reference corresponds to a real traceable number on payment networks is unknown.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify with the payment processor if DEMO-TRACE-0004 can be used to trace the refund status in their system."
+        }
+      },
+      {
+        "configuration": "fixed",
+        "case_id": "CASE-1007",
+        "question": "Is a matching refund posted in the statement?",
+        "faithfulness": 0.375,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether a refund was posted outside the supplied statement date range or in another account is unknown.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Request processor submission acknowledgement or a more complete statement covering a wider date range to verify if a refund was posted."
+        }
+      },
+      {
+        "configuration": "fixed_cross_encoder",
+        "case_id": "CASE-1002",
+        "question": "What amount was approved?",
+        "faithfulness": 0.42857142857142855,
+        "answer": {
+          "claims": [
+            {
+              "text": "The refund amount approved was USD 899.00.",
+              "source_id": "CASE-1002-approval",
+              "quote": "Refund approval APR-0002: USD 899.00 approved. Approval is an internal decision and does not confirm payment submission or bank posting."
+            }
+          ],
+          "unknowns": [
+            "Whether the approved amount was submitted for payment or posted to the customer's account."
+          ],
+          "suggested_next_step": "Verify if the approved refund amount of USD 899.00 has been submitted to the payment processor and posted to the customer's account by checking payment submission and bank posting records."
+        }
+      },
+      {
+        "configuration": "fixed_cross_encoder",
+        "case_id": "CASE-1007",
+        "question": "Is a matching refund posted in the statement?",
+        "faithfulness": 0.4444444444444444,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether a refund was posted outside the supplied statement date range or in another account is unknown.",
+            "Whether a merchant refund was submitted to the bank but not yet posted is unknown.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Request additional statement data beyond October 16, 2026, or confirmation from payments operations on merchant refund submission and posting status."
+        }
+      },
+      {
+        "configuration": "fixed_cross_encoder",
+        "case_id": "CASE-1008",
+        "question": "What payment was captured?",
+        "faithfulness": 0.3333333333333333,
+        "answer": {
+          "claims": [
+            {
+              "text": "The payment captured was a purchase transaction of USD 1299.00 for order ORD-24008.",
+              "source_id": "CASE-1008-payment",
+              "quote": "Transaction PAY-0008. Order ORD-24008. Captured purchase: USD 1299.00. Currency USD. Status captured. This is a debit, not a refund."
+            }
+          ],
+          "unknowns": [],
+          "suggested_next_step": "Review processor settlement records to confirm if the captured payment of USD 1299.00 was posted to the customer's bank account."
+        }
+      },
+      {
+        "configuration": "semantic",
+        "case_id": "CASE-1001",
+        "question": "What is the requested return amount?",
+        "faithfulness": 0.0,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify if the requested refund amount of USD 1099.00 matches the payment and return authorization records for consistency."
+        }
+      },
+      {
+        "configuration": "semantic",
+        "case_id": "CASE-1004",
+        "question": "Was device inspection accepted?",
+        "faithfulness": 0.2857142857142857,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether the inspection acceptance led to refund approval or return acceptance by the merchant.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Review return acceptance and refund approval records to determine if the accepted inspection resulted in a refund or return approval."
+        }
+      },
+      {
+        "configuration": "semantic",
+        "case_id": "CASE-1005",
+        "question": "Which device was ordered?",
+        "faithfulness": 0.4,
+        "answer": {
+          "claims": [
+            {
+              "text": "An employee checked reference ORD-24005 and noted device DEV-88005.",
+              "source_id": "CASE-1005-conversation",
+              "quote": "The employee checks reference ORD-24005 and notes device DEV-88005."
+            }
+          ],
+          "unknowns": [
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Confirm delivery details to verify the device received matches the ordered device DEV-88005."
+        }
+      },
+      {
+        "configuration": "semantic",
+        "case_id": "CASE-1006",
+        "question": "Does the scanned device match the expected device?",
+        "faithfulness": 0.4,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether the scanned device physically matches the expected device beyond identifier mismatch is unknown.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Review the discrepancy reconciliation process to resolve the identifier mismatch and confirm the correct device returned."
+        }
+      },
+      {
+        "configuration": "semantic",
+        "case_id": "CASE-1008",
+        "question": "What payment was captured?",
+        "faithfulness": 0.2,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether any other payments were captured besides the USD 1299.00 debit.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify if any refunds or other payment captures exist related to this case to complete the payment history."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1001",
+        "question": "What is the requested return amount?",
+        "faithfulness": 0.0,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify if the requested refund amount of USD 1099.00 has been processed or posted to the customer's account."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1002",
+        "question": "What amount was approved?",
+        "faithfulness": 0.0,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify if the approved refund amount of USD 899.00 was submitted for payment and posted to the customer's account."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1003",
+        "question": "How much merchant refund credit posted?",
+        "faithfulness": 0.4,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether any additional merchant refund credits posted beyond the $799.00 shown.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Confirm if any other merchant refund credits were posted or pending beyond the $799.00 already documented."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1004",
+        "question": "Is the merchant refund posted?",
+        "faithfulness": 0.4,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Confirm customer receipt of the posted refund credit and close the case if satisfied."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1006",
+        "question": "What is the order device identifier?",
+        "faithfulness": 0.25,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify the device identifier DEV-88006 with the warehouse inspection records to resolve the mismatch with scanned device DEV-OTHER-771."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1006",
+        "question": "Was the package delivered?",
+        "faithfulness": 0.4,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether the delivered package contained the specific device DEV-88006.",
+            "An unsupported generated claim was removed.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Verify intake evidence or inspection records to confirm the contents and condition of the delivered package."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1007",
+        "question": "Was the device accepted after inspection?",
+        "faithfulness": 0.25,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "Whether the acceptance after inspection led to a refund or return approval is unknown.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Review return approval records to determine if the accepted device led to refund approval."
+        }
+      },
+      {
+        "configuration": "semantic_cross_encoder",
+        "case_id": "CASE-1008",
+        "question": "What payment was captured?",
+        "faithfulness": 0.2,
+        "answer": {
+          "claims": [],
+          "unknowns": [
+            "The exact payment instrument used is not detailed beyond a masked suffix in the invoice.",
+            "An unsupported generated claim was removed."
+          ],
+          "suggested_next_step": "Review the payment instrument details and bank posting records to confirm the final settlement status of the captured payment."
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "CASE-2001",
+      "calculation_correct": true,
+      "action_justified": true,
+      "workflow_correct": true,
+      "input_conflict_detected": false,
+      "explanation_faithfulness": null
+    },
+    {
+      "case_id": "CASE-2002",
+      "calculation_correct": true,
+      "action_justified": true,
+      "workflow_correct": true,
+      "input_conflict_detected": false,
+      "explanation_faithfulness": null
+    },
+    {
+      "case_id": "CASE-2003",
+      "calculation_correct": true,
+      "action_justified": true,
+      "workflow_correct": true,
+      "input_conflict_detected": true,
+      "explanation_faithfulness": null
+    },
+    {
+      "case_id": "CASE-2004",
+      "calculation_correct": true,
+      "action_justified": true,
+      "workflow_correct": true,
+      "input_conflict_detected": false,
+      "explanation_faithfulness": null
+    }
+  ],
+  "limitations": [
+    "Four fresh synthetic scenarios, not a production or statistical benchmark.",
+    "Deterministic evaluation cannot establish LLM faithfulness.",
+    "Historical low-score rows are retained for whole-output review; old judge contexts were not replayed."
+  ]
+}
